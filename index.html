@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>From Pixels to Touch: Direct Tactile Servoing with Learned Photometric Normalization</title>
+  <meta name="description" content="Project page for the Direct Tactile Servoing paper." />
+  <style>
+    :root {
+      --bg: #f7f8fb;
+      --card: #ffffff;
+      --text: #1b1f24;
+      --muted: #5b6470;
+      --line: #d9dee7;
+      --accent: #1f6feb;
+      --accent-soft: #eaf2ff;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      --maxw: 1080px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover { text-decoration: underline; }
+
+    .container {
+      width: min(calc(100% - 2rem), var(--maxw));
+      margin: 0 auto;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(10px);
+      background: rgba(247, 248, 251, 0.86);
+      border-bottom: 1px solid rgba(217, 222, 231, 0.8);
+    }
+
+    .topbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.85rem 0;
+    }
+
+    .brand {
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .nav {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      font-size: 0.95rem;
+    }
+
+    .hero {
+      padding: 4rem 0 2rem;
+    }
+
+    .hero-card {
+      background: linear-gradient(180deg, #ffffff 0%, #fbfcff 100%);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      padding: 3rem;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.7rem;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 4vw, 3.6rem);
+      line-height: 1.08;
+      letter-spacing: -0.04em;
+    }
+
+    .subtitle {
+      margin-top: 0.9rem;
+      font-size: 1.15rem;
+      color: var(--muted);
+      max-width: 850px;
+    }
+
+    .authors {
+      margin-top: 1.5rem;
+      font-size: 1.02rem;
+    }
+
+    .affiliations {
+      margin-top: 0.45rem;
+      color: var(--muted);
+      font-size: 0.98rem;
+    }
+
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 1.6rem;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.8rem 1.05rem;
+      border-radius: 999px;
+      background: var(--text);
+      color: white;
+      font-weight: 600;
+      border: 1px solid transparent;
+    }
+
+    .button.secondary {
+      background: white;
+      color: var(--text);
+      border-color: var(--line);
+    }
+
+    .button:hover {
+      text-decoration: none;
+      transform: translateY(-1px);
+    }
+
+    section {
+      padding: 1.4rem 0 0.2rem;
+    }
+
+    .section-title {
+      font-size: 1.7rem;
+      margin: 0 0 0.9rem;
+      letter-spacing: -0.03em;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      padding: 1.4rem;
+    }
+
+    .media-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 1rem;
+    }
+
+    .placeholder,
+    .video-wrap,
+    .gif-wrap {
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      background: #eef2f7;
+    }
+
+    .placeholder {
+      min-height: 340px;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      font-weight: 600;
+      text-align: center;
+      padding: 1rem;
+    }
+
+    video, img, iframe {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border: 0;
+      background: #000;
+    }
+
+    .stack {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 1rem;
+    }
+
+    .method-layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    .pdf-frame {
+      width: 100%;
+      min-height: 420px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      overflow: hidden;
+      background: white;
+    }
+
+    .pdf-frame iframe,
+    .pdf-frame embed,
+    .pdf-frame object {
+      width: 100%;
+      height: 100%;
+      min-height: 420px;
+      display: block;
+      border: 0;
+    }
+
+    .pdf-frame img,
+    .pdf-frame iframe,
+    .pdf-frame embed,
+    .pdf-frame object {
+      background: #fff;
+    }
+
+    .abstract {
+      font-size: 1.02rem;
+      color: #26303a;
+      text-align: justify;
+    }
+
+    .list {
+      margin: 0;
+      padding-left: 1.2rem;
+      text-align: justify;
+    }
+
+    .list li + li { margin-top: 0.5rem; }
+
+    .method-layout p {
+      text-align: justify;
+    }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    .result-row {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 1rem;
+      align-items: stretch;
+    }
+
+    .result-row.reverse {
+      grid-template-columns: 0.9fr 1.1fr;
+    }
+
+    .result-media,
+    .result-text {
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .result-media {
+      min-height: 280px;
+      background: #fff;
+    }
+
+    .result-media video,
+    .result-media img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      background: #fff;
+    }
+
+    .result-text {
+      padding: clamp(1rem, 2vw, 1.6rem);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+
+    .result-text h3 {
+      margin: 0 0 0.6rem 0;
+      font-size: clamp(1.05rem, 1.6vw, 1.45rem);
+      line-height: 1.2;
+    }
+
+    .result-text p {
+      margin: 0;
+      font-size: clamp(0.95rem, 1.2vw, 1.08rem);
+      line-height: 1.6;
+      color: var(--muted);
+    }
+
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: #0f172a;
+      color: #e5edf8;
+      padding: 1rem;
+      border-radius: 16px;
+      overflow: auto;
+      font-size: 0.92rem;
+    }
+
+    footer {
+      padding: 2rem 0 3rem;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 900px) {
+      .media-grid,
+      .two-col {
+        grid-template-columns: 1fr;
+      }
+
+      .result-row,
+      .result-row.reverse {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-card {
+        padding: 1.5rem;
+      }
+
+      .placeholder {
+        min-height: 240px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <div class="brand">From Pixels to Touch</div>
+      <nav class="nav">
+        <a href="#overview">Overview</a>
+        <a href="#abstract">Abstract</a>
+        <a href="#method">Method</a>
+        <a href="#results">Results</a>
+        <a href="#citation">Citation</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container">
+        <div class="hero-card">
+          <div class="eyebrow">IEEE RA-L 2026 · Project Page</div>
+          <h1>From Pixels to Touch: Direct Tactile Servoing with Learned Photometric Normalization</h1>
+          <p class="subtitle">
+            A direct tactile servoing framework that operates in tactile image space using a learned photometric normalization network, enabling robust closed-loop control without explicit pose or force estimation.
+          </p>
+
+          <div class="authors">
+            <strong>Lluis Prior Sancho</strong>, Tommaso Belvedere, Marco Tognon
+          </div>
+          <div class="affiliations">
+            Univ Rennes, CNRS, Inria, IRISA, 35042 Rennes, France
+          </div>
+
+          <div class="links">
+            <a class="button" href="#" target="_blank" rel="noopener noreferrer">Paper</a>
+            <a class="button secondary" href="#" target="_blank" rel="noopener noreferrer">arXiv</a>
+            <a class="button secondary" href="#" target="_blank" rel="noopener noreferrer">Code</a>
+            <a class="button secondary" href="#citation">BibTeX</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="overview">
+      <div class="container">
+        <h2 class="section-title">Overview</h2>
+        <div class="card media-grid">
+          <div class="video-wrap">
+            <iframe
+                src="https://www.youtube.com/embed/TVk02OENoOc"
+                title="From Pixels to Touch: Direct Tactile Servoing with Learned Photometric Normalization"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen>
+                </iframe>
+
+          </div>
+          <div class="stack">
+            <div class="gif-wrap">
+              <video autoplay muted loop playsinline controls>
+                <source src="assets/videos/overview_2.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            </div>
+            <div class="gif-wrap">
+              <video autoplay muted loop playsinline controls>
+                <source src="assets/videos/overview_3.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="abstract">
+      <div class="container">
+        <div class="card two-col">
+          <div>
+            <h2 class="section-title">Abstract</h2>
+            <p class="abstract">
+              Vision-Based Tactile Sensors (VBTSs) offer high-
+resolution contact information essential for robust robotic contact-
+rich manipulation under occlusions and variable lighting. Direct
+Visual Servoing (DVS) is an interesting alternative to classical
+Position-Based Visual Servoing (PBVS) as it operates directly
+on raw pixel intensities, without requiring feature extraction
+and simplifying the control pipeline. Applying DVS to VBTSs
+is a challenge because of the sensors' strong position-dependent
+lightning effects that violate the brightness-constancy assumption
+that DVS requires. In this work, we introduce a Direct Tactile
+Servoing (DTS) framework that adapts the principles of DVS
+to VBTS. Our approach integrates a deep convolutional U-
+Net that maps raw RGB tactile images to spatially normalized
+grayscale representations, restoring photometric consistency while
+preserving fine contact features. We further conduct targeted
+ablation studies to identify training strategies that balance
+generalization performance and data efficiency. This learned
+normalization enables the direct use of DVS control laws without
+explicit pose or force estimation. Experiments on a robotic
+manipulator equipped with a GelSight Mini sensor validate robust
+and reactive closed-loop tactile servoing across diverse contact
+conditions.
+            </p>
+          </div>
+          <div>
+            <h2 class="section-title">Highlights</h2>
+            <ul class="list">
+              <li>Direct tactile servoing in image space without explicit pose or force estimation.</li>
+              <li>U-Net-based photometric normalization that restores brightness constancy for GelSight-like sensors.</li>
+              <li>Ablation studies on data design, augmentation, training efficiency, and input resolution.</li>
+              <li>Real-world validation on a Franka Panda with 25 Hz online control.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="method">
+      <div class="container">
+        <h2 class="section-title">Method</h2>
+        <div class="card method-layout">
+          <div class="pdf-frame">
+            <img src="assets/images/proposed_method.png" alt="Proposed method diagram" />
+          </div>
+          <div>
+            <p>
+              The method has two stages. First, a photometric normalization network transforms the raw RGB image from the vision-based tactile sensor into a normalized grayscale image whose appearance is less dependent on contact position. Second, direct visual servoing is applied directly to that normalized tactile image, using pixel intensities as the feedback signal.
+            </p>
+            <p>
+              This is important because GelSight-style sensors deliberately use structured multi-color illumination to encode geometric detail, but that same illumination causes the same contact to look different across the sensor surface. The learned mapping compensates for that effect and makes direct tactile control possible without an intermediate pose-estimation module.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="results">
+      <div class="container">
+        <h2 class="section-title">Results</h2>
+        <div class="results-grid">
+          <div class="result-row">
+            <div class="result-media">
+              <img src="assets/images/regularization_results.png" alt="Regulation results" />
+            </div>
+            <div class="result-text">
+              <h3>Regulation to a desired contact image</h3>
+              <p>
+                DTS converges reliably from multiple initial positions, while the classical grayscale baseline loses contact or converges much more slowly.
+              </p>
+            </div>
+          </div>
+
+          <div class="result-row reverse">
+            <div class="result-text">
+              <h3>Photometric normalization analysis</h3>
+              <p>
+                Simulation and real-data studies show substantial improvement over classical grayscale and support training with a compact sphere-only dataset.
+              </p>
+            </div>
+            <div class="result-media">
+              <img src="assets/images/samples.png" alt="Photometric normalization samples" />
+            </div>
+          </div>
+
+          <div class="result-row">
+            <div class="result-media">
+              <video autoplay muted loop playsinline controls>
+                <source src="assets/videos/results_3.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            </div>
+            <div class="result-text">
+              <h3>Tracking moving objects with DTS</h3>
+              <p>
+                The robot maintains contact and follows object motion across varied shapes, materials, and contact geometries using only tactile image feedback.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="citation">
+      <div class="container">
+        <div class="card">
+          <h2 class="section-title">Citation</h2>
+          <pre>@article{prior2026pixels2touch,
+  title   = {From Pixels to Touch: Direct Tactile Servoing with Learned Photometric Normalization},
+  author  = {Prior Sancho, Lluis and Belvedere, Tommaso and Tognon, Marco},
+  journal = {IEEE Robotics and Automation Letters},
+  year    = {2026}
+}
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+        This page was built using the <a href="https://github.com/eliahuhorwitz/Academic-project-page-template" target="_blank">Academic Project Page Template</a> which was adopted from the <a href="https://feedback-mppi.github.io/" target="_blank">Feedback-MPPI</a> project page.
+        You are free to borrow the source code of this website, we just ask that you link back to this page in the footer. <br> This website is licensed under a <a rel="license"  href="http://creativecommons.org/licenses/by-sa/4.0/" target="_blank">Creative
+        Commons Attribution-ShareAlike 4.0 International License</a>.
+    </div>
+  </footer>
+</body>
+</html>
